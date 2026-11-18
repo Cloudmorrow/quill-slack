@@ -1,0 +1,102 @@
+[quill]
+id = "slack"
+name = "Slack bridge"
+version = "1.0.0"
+summary = "Channels and Slack as one conversation: what is said in a linked channel is said in the other, threads and all."
+category = "communication"
+icon = "bridge"
+publisher = "Cloudmorrow"
+license = "AGPL-3.0-or-later"
+code = "quill.py"
+features = [
+  "Link a channel here to a channel in Slack: what is written in either shows up in the other",
+  "Replies stay in their thread, on both sides",
+  "A message from Slack says who wrote it — Ada (Slack) — and is news here like any other",
+  "What you write is posted in Slack under your own name",
+  "Your own Slack app, made from a manifest in two minutes: no service in between, nothing leaves but the messages",
+  "Set up once by an administrator, under Administration › Quills › Slack bridge",
+]
+
+# Channels draws the conversation; this Quill only carries messages across.
+[requires]
+quills = ["channels"]
+
+[uses]
+datamodels = ["channel", "message"]
+
+# Which Slack message a message here is, so a reply finds its thread and
+# nothing is carried across twice.
+[[extends]]
+model = "message"
+[extends.fields]
+ts = { kind = "string", indexed = true, label = "Slack message", description = "Slack's id for the same message in the linked Slack channel" }
+
+# What Slack says comes into the linked channel as from its sender there —
+# never as from anybody on this server.
+[[delivers]]
+model = "message"
+why = "to bring what is said in a linked Slack channel into its channel here, as from the person who said it in Slack"
+
+# -- the settings: an administrator's, on the Quill's sheet ---------------------------------
+[[screens]]
+id = "settings"
+icon = "plug"
+label = "Slack"
+view = "settings"
+model = "slack.workspace"
+admin = true
+
+[[actions]]
+id = "connect"
+admin = true
+label = "Connect Slack"
+tone = "primary"
+description = "The app's Bot User OAuth Token and Signing Secret, from your Slack app's settings. Administrators only."
+[actions.fields]
+token = { kind = "string", required = true, label = "Bot User OAuth Token", description = "OAuth & Permissions › Bot User OAuth Token: starts with xoxb-" }
+signing_secret = { kind = "string", required = true, label = "Signing Secret", description = "Basic Information › App Credentials › Signing Secret" }
+
+[[actions]]
+id = "link"
+admin = true
+label = "Link to Slack"
+tone = "primary"
+description = "Keeps this channel and a Slack channel as one conversation. Administrators only."
+[actions.fields]
+channel = { kind = "string", required = true, label = "Channel here" }
+slack = { kind = "string", required = true, label = "Slack channel", description = "Its name in Slack, like #general. A private one needs the app invited first: /invite @Cloudmorrow in it" }
+
+[[actions]]
+id = "unlink"
+admin = true
+label = "Unlink"
+on = "slack.link"
+confirm = "Stop carrying messages between these two channels? What was carried stays on both sides."
+tone = "danger"
+description = "Messages stop going across; both channels keep what they have."
+
+[[actions]]
+id = "disconnect"
+admin = true
+label = "Disconnect Slack"
+confirm = "Forget the workspace, its token and every link? Messages already carried stay on both sides."
+tone = "danger"
+description = "The bridge stops, both ways. The app stays in your Slack workspace until you remove it there."
+
+# -- carrying messages -----------------------------------------------------------------------
+# A message written here: posted in the linked Slack channel, as whoever wrote it.
+[[hooks]]
+on = "message"
+when = "created"
+handler = "to_slack"
+
+# Slack's Events API: a message in a linked Slack channel, brought in here.
+# Slack's Request URL is this webhook's address, with its token, from the
+# Quill's sheet; each event is also checked against the Signing Secret.
+[[webhooks]]
+id = "events"
+handler = "events"
+
+[[fetch]]
+host = "slack.com"
+why = "to post what is written in a linked channel to Slack, and to learn the names of the people who write there"

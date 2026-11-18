@@ -1,0 +1,16 @@
+# Who somebody in Slack is, by name: asked of Slack once, then kept, so a
+# message from them says their name rather than U04ABC. Public, so the
+# webhook and every person's code read the same names.
+
+[datamodel]
+id = "slack.member"
+version = 1
+label = "Slack member"
+description = "Somebody in the Slack workspace, by name, as messages from them say it."
+scopes = ["public"]
+space = true
+title = "name"
+
+[fields]
+user_id = { kind = "string", required = true, indexed = true, label = "Slack user id" }
+name = { kind = "string", required = true }

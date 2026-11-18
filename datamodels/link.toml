@@ -1,0 +1,17 @@
+# One channel here and one channel in Slack, kept as one conversation: what
+# is written in either is posted in the other. Public, so every person's
+# code finds where their message goes; only an administrator links.
+
+[datamodel]
+id = "slack.link"
+version = 1
+label = "Slack link"
+description = "A channel here and a channel in Slack, kept as one conversation."
+scopes = ["public"]
+space = true
+title = "slack_name"
+
+[fields]
+channel = { kind = "link", to = "channel", required = true, indexed = true, on_delete = "cascade", description = "The channel here" }
+slack_channel = { kind = "string", required = true, indexed = true, label = "Slack channel id", description = "Slack's id for the channel, C… or G…" }
+slack_name = { kind = "string", required = true, label = "Slack channel", description = "The channel's name in Slack, #general" }

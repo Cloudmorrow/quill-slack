@@ -1,0 +1,26 @@
+# The Slack workspace this server is bridged to: one record, for everybody.
+# A public space, so every person's code reads it — the bot token, to post
+# what they write into Slack — and only an administrator changes it. The
+# token and the signing secret are the Quill's alone: never listed, never
+# drawn, read by this Quill's code and nobody through the record API.
+
+[datamodel]
+id = "slack.workspace"
+version = 1
+label = "Slack workspace"
+description = "The Slack workspace this server's channels are bridged to: its bot, and how the bridge is doing."
+scopes = ["public"]
+space = true
+title = "team"
+
+[fields]
+team = { kind = "string", description = "The workspace's name, as Slack has it" }
+team_id = { kind = "string", indexed = true, description = "Slack's id for the workspace" }
+url = { kind = "string", description = "The workspace's address on Slack" }
+bot_user = { kind = "string", description = "The app's bot user in Slack, whose messages are never brought back" }
+bot_id = { kind = "string", description = "The app's bot id in Slack" }
+token = { kind = "string", required = true, secret = "quill", description = "The app's Bot User OAuth Token, xoxb-…" }
+signing_secret = { kind = "string", required = true, secret = "quill", description = "The app's Signing Secret, which proves an event came from Slack" }
+status = { kind = "string", description = "What the last thing to or from Slack said" }
+received = { kind = "int", default = 0, description = "Messages brought in from Slack so far" }
+heard_at = { kind = "datetime", label = "Last heard from Slack" }
